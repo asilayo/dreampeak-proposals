@@ -1,0 +1,8 @@
+# ---- Front-end (safe to expose; embedded at build time) ----
+# Supabase → Project Settings → API
+VITE_SUPABASE_URL=https://YOUR-PROJECT-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-public-key
+
+# ---- Server only (NEVER prefix with VITE_, never goes to the browser) ----
+# Set this in Vercel → Settings → Environment Variables. Used by /api/generate.
+ANTHROPIC_API_KEY=sk-ant-your-key
