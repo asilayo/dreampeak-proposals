@@ -123,7 +123,7 @@ label.fl{display:block;font-size:11.5px;font-weight:600;letter-spacing:.04em;tex
 .iconbtn:hover{color:var(--danger);border-color:var(--danger)}
 .iconbtn:disabled{opacity:.4;cursor:not-allowed}
 
-.feeline{display:grid;grid-template-columns:24px 1fr 92px 132px;gap:10px;align-items:center;margin-bottom:9px}
+.feeline{display:grid;grid-template-columns:24px 1fr 74px 74px 120px;gap:9px;align-items:center;margin-bottom:9px}
 .feeline.off{opacity:.5}
 .occ{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
 .occ .blk label{margin-bottom:6px}
@@ -272,6 +272,8 @@ label.fl{display:block;font-size:11.5px;font-weight:600;letter-spacing:.04em;tex
 .cday h4{font-size:15px;margin-bottom:3px}
 .cday .loc{font-size:12px;color:var(--sage);font-weight:600;margin-bottom:4px}
 .cday p{font-size:13.5px;color:#41493f;margin:0}
+.cday p.overnight{margin-top:6px;padding-top:6px;border-top:1px dotted var(--line);font-size:12.5px;color:var(--muted)}
+.cday p.overnight b{color:var(--ink)}
 .inc{columns:2;column-gap:26px}
 @media(max-width:560px){.inc{columns:1}}
 .inc li{break-inside:avoid;display:flex;gap:9px;align-items:flex-start;font-size:13.5px;margin-bottom:9px;list-style:none}
@@ -363,13 +365,14 @@ label.fl{display:block;font-size:11.5px;font-weight:600;letter-spacing:.04em;tex
 `;
 
 /* -------------------------- data -------------------------- */
-// feeA / feeC = park entrance per adult / child per day. perVeh = crater service fee (per vehicle/day).
+// feeA / feeC = park entrance per adult / child (5–15) per day. vehFee = vehicle entry fee per vehicle/day.
+// perVeh = crater service fee (per vehicle/day, Ngorongoro only). Official TANAPA / NCAA 2025–26 (USD, excl. 18% VAT).
 const PARKS = [
-  { id: "serengeti", name: "Serengeti National Park", feeA: 83, feeC: 24, perVeh: 0, viaNCA: true, desc: "Endless plains, big cats and the Great Migration.", acts: ["Morning and late-afternoon game drives across the plains.", "Search for lion, leopard, cheetah and resident elephant.", "Optional sunrise hot-air balloon safari (supplement)."] },
-  { id: "ngorongoro", name: "Ngorongoro Crater (NCAA)", feeA: 84, feeC: 24, perVeh: 295, viaNCA: false, desc: "A collapsed caldera teeming with wildlife, including black rhino.", acts: ["Descend the crater wall for a full-day game drive on the floor.", "Look for the Big Five, including the rare black rhino.", "Picnic lunch beside Lake Magadi among hippo and flamingo."] },
-  { id: "tarangire", name: "Tarangire National Park", feeA: 59, feeC: 18, perVeh: 0, viaNCA: false, desc: "Baobab-studded valleys and large elephant herds.", acts: ["Game drives among ancient baobab trees.", "Track Tanzania's largest breeding herds of elephant.", "Excellent dry-season birdwatching and predators."] },
-  { id: "manyara", name: "Lake Manyara National Park", feeA: 59, feeC: 18, perVeh: 0, viaNCA: false, desc: "Groundwater forest, flamingo flocks and tree-climbing lions.", acts: ["Drive through lush groundwater forest and woodland.", "Watch flamingo and pelican along the lake shore.", "Look for the famous tree-climbing lions."] },
-  { id: "arusha", name: "Arusha National Park", feeA: 53, feeC: 18, perVeh: 0, viaNCA: false, desc: "Momella Lakes, Mount Meru and walking safaris.", acts: ["Guided walking safari with an armed ranger.", "Canoe the Momella Lakes (seasonal).", "Clear-day views of Mount Meru and Kilimanjaro."] },
+  { id: "serengeti", name: "Serengeti National Park", feeA: 83, feeC: 20, vehFee: 20, perVeh: 0, viaNCA: true, desc: "Endless plains, big cats and the Great Migration.", acts: ["Morning and late-afternoon game drives across the plains.", "Search for lion, leopard, cheetah and resident elephant.", "Optional sunrise hot-air balloon safari (supplement)."] },
+  { id: "ngorongoro", name: "Ngorongoro Crater (NCAA)", feeA: 70.8, feeC: 23.6, vehFee: 20, perVeh: 295, viaNCA: false, desc: "A collapsed caldera teeming with wildlife, including black rhino.", acts: ["Descend the crater wall for a full-day game drive on the floor.", "Look for the Big Five, including the rare black rhino.", "Picnic lunch beside Lake Magadi among hippo and flamingo."] },
+  { id: "tarangire", name: "Tarangire National Park", feeA: 59, feeC: 20, vehFee: 20, perVeh: 0, viaNCA: false, desc: "Baobab-studded valleys and large elephant herds.", acts: ["Game drives among ancient baobab trees.", "Track Tanzania's largest breeding herds of elephant.", "Excellent dry-season birdwatching and predators."] },
+  { id: "manyara", name: "Lake Manyara National Park", feeA: 59, feeC: 20, vehFee: 20, perVeh: 0, viaNCA: false, desc: "Groundwater forest, flamingo flocks and tree-climbing lions.", acts: ["Drive through lush groundwater forest and woodland.", "Watch flamingo and pelican along the lake shore.", "Look for the famous tree-climbing lions."] },
+  { id: "arusha", name: "Arusha National Park", feeA: 59, feeC: 20, vehFee: 20, perVeh: 0, viaNCA: false, desc: "Momella Lakes, Mount Meru and walking safaris.", acts: ["Guided walking safari with an armed ranger.", "Canoe the Momella Lakes (seasonal).", "Clear-day views of Mount Meru and Kilimanjaro."] },
 ];
 
 // inPark default + concession/camping per person/night defaults (adult/child)
@@ -389,6 +392,14 @@ const TIERS = [
   { id: "u2", label: "Ultra-Premium 2", band: "$4000+", rep: 4500 },
 ];
 // inPark = lodge sits inside a park/NCA (full board + concession applies). Gateway towns & Zanzibar are outside.
+// In-park concession / camping fee per person & child (5–15) per night, by location (NCAA / TANAPA 2025–26, USD).
+const CONCESSION = {
+  serengeti_c: { a: 71, c: 12 }, serengeti_n: { a: 71, c: 12 },
+  ngorongoro: { a: 71, c: 12 },
+  tarangire: { a: 50, c: 12 }, manyara: { a: 50, c: 12 },
+  natron: { a: 0, c: 0 },
+};
+const concFor = (locId) => CONCESSION[locId] || { a: 0, c: 0 };
 const LOC = [
   { id: "arusha", name: "Arusha", group: "Gateway towns", inPark: false, board: "B&B" },
   { id: "moshi", name: "Moshi", group: "Gateway towns", inPark: false, board: "B&B" },
@@ -424,6 +435,7 @@ const propsForLoc = (locId, tierId) => ((PROPS[locId] && PROPS[locId][tierId]) |
 const repRate = (tierId, season) => Math.round(tierMeta(tierId).rep * (SEASON_MULT[season] || 1));
 const firstTier = (locId) => { const t = tiersForLoc(locId); return (t[0] || TIERS[3]).id; };
 const MEALS = ["Full board", "Half board", "Bed & breakfast"];
+const mealsLabel = (board) => board === "Full board" ? "Breakfast, Lunch & Dinner" : board === "Half board" ? "Breakfast & Dinner" : board === "Bed & breakfast" ? "Breakfast" : "";
 
 const KILI = [
   { id: "marangu", name: "Marangu Route", days: 6, price: 1950, note: "The classic “Coca-Cola” route with hut accommodation." },
@@ -466,9 +478,13 @@ const BASIS = [
   { v: "flat", label: "Flat fee" },
 ];
 const DEFAULT_FEES = [
-  { id: "fly", label: "Flying Doctors evacuation cover", amount: 20, basis: "pp", on: true },
   { id: "water", label: "Bottled water & refreshments", amount: 6, basis: "pp_day", on: true },
   { id: "transfer", label: "Airport transfers (Kilimanjaro / JRO)", amount: 90, basis: "flat", on: true },
+  { id: "boma", label: "Maasai boma visit", amount: 110, basis: "per_vehicle", on: false },
+  { id: "balloon", label: "Hot Air Balloon Safari", amount: 575, basis: "pp", on: false },
+  { id: "olduvai", label: "Olduvai Gorge (paleoanthropological site)", amount: 40, aC: 15, basis: "pp", on: false },
+  { id: "hadzabe", label: "Hadzabe & Datoga Tribe Visit", amount: 130, basis: "per_vehicle", on: false },
+  { id: "fly", label: "Flying Doctors evacuation cover", amount: 20, basis: "pp", on: true },
 ];
 
 const SEASONS = {
@@ -493,6 +509,7 @@ function seasonFromDate(s) {
 }
 const nightsBetween = (a, b) => { if (!a || !b) return null; const d1 = new Date(a + "T00:00:00"), d2 = new Date(b + "T00:00:00"); if (isNaN(d1) || isNaN(d2)) return null; return Math.max(0, Math.round((d2 - d1) / 86400000)); };
 const fmtDate = (s) => { if (!s) return "—"; const d = new Date(s + "T00:00:00"); return isNaN(d) ? "—" : d.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" }); };
+const addDaysYMD = (ymd, n) => { if (!ymd) return null; const d = new Date(ymd + "T00:00:00"); if (isNaN(d)) return null; d.setDate(d.getDate() + n); const y = d.getFullYear(); const m = String(d.getMonth() + 1).padStart(2, "0"); const day = String(d.getDate()).padStart(2, "0"); return `${y}-${m}-${day}`; };
 
 /* small UI atoms */
 function Stepper({ value, set, min = 0, sm, label }) {
@@ -527,7 +544,9 @@ export default function App() {
   const [childAge, setChildAge] = useState("2–11 yrs");
   const [childAccomPct, setChildAccomPct] = useState(50);
   const [singles, setSingles] = useState(0);
-  const [singleSupp, setSingleSupp] = useState(120);
+  // edit / versioning
+  const [editingBase, setEditingBase] = useState(null); // base code of the proposal being edited
+  const [editingVersion, setEditingVersion] = useState(0);
 
   // trip
   const [client, setClient] = useState("");
@@ -542,14 +561,14 @@ export default function App() {
   // NCA transit
   const [ncaOn, setNcaOn] = useState(true);
   const [ncaDays, setNcaDays] = useState(2);
-  const [ncaA, setNcaA] = useState(71);
-  const [ncaC, setNcaC] = useState(24);
-  const [ncaVeh, setNcaVeh] = useState(30);
+  const [ncaA, setNcaA] = useState(70.8);
+  const [ncaC, setNcaC] = useState(23.6);
+  const [ncaVeh, setNcaVeh] = useState(20);
 
   // accommodation
   const [stays, setStays] = useState([
-    { id: "s1", loc: "serengeti_c", tier: "m2", prop: "Serengeti Sopa Lodge", nights: 2, inPark: true, board: "Full board", cA: 60, cC: 18, rate: 180 },
-    { id: "s2", loc: "karatu", tier: "m1", prop: "Ngorongoro Farm House", nights: 1, inPark: false, board: "Half board", cA: 0, cC: 0, rate: 130 },
+    { id: "s1", loc: "serengeti_c", tier: "m2", prop: "Serengeti Sopa Lodge", nights: 2, inPark: true, board: "Full board", cA: 71, cC: 12, rate: 180, singleSupp: 90 },
+    { id: "s2", loc: "karatu", tier: "m1", prop: "Ngorongoro Farm House", nights: 1, inPark: false, board: "Half board", cA: 0, cC: 0, rate: 130, singleSupp: 65 },
   ]);
 
   // vehicle / crew
@@ -615,8 +634,8 @@ export default function App() {
   /* derived */
   const guests = adults + children;
   const selectedParks = useMemo(() => [
-    ...PARKS.filter((p) => parks[p.id]?.on).map((p) => ({ ...p, days: parks[p.id]?.days ?? 2, feeA: parks[p.id]?.feeA ?? p.feeA, feeC: parks[p.id]?.feeC ?? p.feeC })),
-    ...customParks.map((c) => ({ id: c.id, name: c.name || "Custom park / reserve", days: num(c.days, 1) || 1, feeA: num(c.feeA), feeC: num(c.feeC), perVeh: num(c.perVeh), viaNCA: false, custom: true, desc: "", acts: [`Game drives and guided activities in ${c.name || "this area"}.`] })),
+    ...PARKS.filter((p) => parks[p.id]?.on).map((p) => ({ ...p, days: parks[p.id]?.days ?? 2, feeA: parks[p.id]?.feeA ?? p.feeA, feeC: parks[p.id]?.feeC ?? p.feeC, vehFee: parks[p.id]?.vehFee ?? p.vehFee ?? 0 })),
+    ...customParks.map((c) => ({ id: c.id, name: c.name || "Custom park / reserve", days: num(c.days, 1) || 1, feeA: num(c.feeA), feeC: num(c.feeC), vehFee: num(c.vehFee), perVeh: 0, viaNCA: false, custom: true, desc: "", acts: [`Game drives and guided activities in ${c.name || "this area"}.`] })),
   ], [parks, customParks]);
   const serengetiSelected = selectedParks.some((p) => p.id === "serengeti");
   const tripNights = nightsBetween(start, end);
@@ -625,7 +644,7 @@ export default function App() {
   const serviceDays = safariDaysOv === "" ? autoSafari : Math.max(1, num(safariDaysOv, 1));
   const season = seasonOverride === "auto" ? seasonFromDate(start) : seasonOverride;
   // keep lodge rates in step with the selected season (manual edits reset when the season changes)
-  useEffect(() => { setStays((prev) => prev.map((s) => ({ ...s, rate: repRate(s.tier, season) }))); }, [season]);
+  const refreshRatesToSeason = () => setStays((prev) => prev.map((s) => ({ ...s, rate: repRate(s.tier, season), singleSupp: Math.round(repRate(s.tier, season) * 0.5) })));
   const vehicles = vehAuto ? Math.max(1, Math.ceil(guests / 6)) : Math.max(1, vehCount);
   const plannedNights = stays.reduce((s, x) => s + num(x.nights), 0);
   const zNights = zStoneNights + zBeachNights;
@@ -640,11 +659,13 @@ export default function App() {
     const parkSub = selectedParks.map((p) => ({ label: `${p.name.replace(" (NCAA)", "")} · ${p.days}d`, value: (adults * p.feeA + children * p.feeC) * p.days }));
     const parkFees = parkSub.reduce((s, x) => s + x.value, 0);
     const crater = selectedParks.reduce((s, p) => s + (p.perVeh || 0) * p.days * vehicles, 0);
+    const vehEntry = selectedParks.reduce((s, p) => s + (p.vehFee || 0) * p.days * vehicles, 0);
     const ncaPerson = (ncaOn && serengetiSelected) ? (adults * ncaA + children * ncaC) * ncaDays : 0;
     const ncaVehTot = (ncaOn && serengetiSelected) ? ncaVeh * ncaDays * vehicles : 0;
     const ncaTotal = ncaPerson + ncaVehTot;
-    const craterNca = crater + ncaTotal;
+    const craterNca = crater + vehEntry + ncaTotal;
     const craterNcaSub = [];
+    if (vehEntry > 0) craterNcaSub.push({ label: "Park vehicle entry (per vehicle)", value: vehEntry });
     if (crater > 0) craterNcaSub.push({ label: "Ngorongoro crater service (per vehicle)", value: crater });
     if (ncaTotal > 0) craterNcaSub.push({ label: `NCA transit · ${ncaDays}d (Serengeti route)`, value: ncaTotal });
 
@@ -654,16 +675,18 @@ export default function App() {
       accomBase += (adults * rate + children * rate * cp) * num(st.nights);
       if (st.inPark) concession += (adults * num(st.cA) + children * num(st.cC)) * num(st.nights);
     });
-    const singleSuppSafari = singles * singleSupp * plannedNights;
+    const singleSuppPerRoom = stays.reduce((s, st) => s + num(st.singleSupp) * num(st.nights), 0);
+    const singleSuppSafari = singles * singleSuppPerRoom;
     const accomTotal = accomBase + concession + singleSuppSafari;
     const accomSub = [{ label: `Room rate · ${plannedNights} night${plannedNights !== 1 ? "s" : ""}`, value: accomBase }];
     if (concession > 0) accomSub.push({ label: "Concession / camping fees", value: concession });
     if (singleSuppSafari > 0) accomSub.push({ label: `Single supplement · ${singles} room${singles !== 1 ? "s" : ""}`, value: singleSuppSafari });
 
     const feeItems = fees.filter((f) => f.on && f.amount > 0).map((f) => {
+      const ppEach = adults * f.amount + children * (f.aC != null ? f.aC : f.amount);
       let v = 0;
-      if (f.basis === "pp_day") v = f.amount * guests * serviceDays;
-      else if (f.basis === "pp") v = f.amount * guests;
+      if (f.basis === "pp_day") v = ppEach * serviceDays;
+      else if (f.basis === "pp") v = ppEach;
       else if (f.basis === "per_vehicle_day") v = f.amount * vehicles * serviceDays;
       else if (f.basis === "per_vehicle") v = f.amount * vehicles;
       else v = f.amount;
@@ -708,13 +731,14 @@ export default function App() {
       else if (f.basis === "pp_day") ppDayFees += f.amount * serviceDays;
     });
     const crater1 = selectedParks.reduce((s, p) => s + (p.perVeh || 0) * p.days, 0);
+    const vehEntry1 = selectedParks.reduce((s, p) => s + (p.vehFee || 0) * p.days, 0);
     const ncaVeh1 = (ncaOn && serengetiSelected) ? ncaVeh * ncaDays : 0;
-    const shared1 = vehRate * serviceDays + guideRate * serviceDays + crater1 + ncaVeh1 + flatFees + perVehFees + perVehDayFees;
+    const shared1 = vehRate * serviceDays + guideRate * serviceDays + crater1 + vehEntry1 + ncaVeh1 + flatFees + perVehFees + perVehDayFees;
     const parkAdult = selectedParks.reduce((s, p) => s + p.feeA * p.days, 0);
     const accomAdult = stays.reduce((s, st) => s + num(st.rate) * num(st.nights), 0);
     const ncaPersonAdult = (ncaOn && serengetiSelected) ? ncaA * ncaDays : 0;
     const ownPP = parkAdult + accomAdult + ncaPersonAdult + ppFees + ppDayFees;
-    const singleNet = singleSupp * plannedNights;
+    const singleNet = singleSuppPerRoom;
     const sizes = [1, 2, 3, 4, 5, 6];
     const sharingSell = sizes.map((n) => (shared1 / n + ownPP) * m);
     const singleSuppSell = singleNet * m;
@@ -732,22 +756,23 @@ export default function App() {
       kiliTotal, kiliSub, zTotal, zSub, b2b,
       net, profit, total, effMargin, perGuest: total / Math.max(1, guests), perGuestDay: total / Math.max(1, guests) / serviceDays
     };
-  }, [adults, children, childAccomPct, vehRate, vehicles, serviceDays, guideRate, selectedParks, serengetiSelected, ncaOn, ncaDays, ncaA, ncaC, ncaVeh, stays, season, singles, singleSupp, plannedNights, fees, guests, marginB2C, marginB2B, kiliOn, kiliPrice, kiliClimbers, kiliRoute, zOn, zAdults, zChildren, zStoneNights, zStoneRate, zBeachNights, zBeachRate, zSingles, zSingleSupp, zFlightA, zFlightC, zOrigin, zTours]);
+  }, [adults, children, childAccomPct, vehRate, vehicles, serviceDays, guideRate, selectedParks, serengetiSelected, ncaOn, ncaDays, ncaA, ncaC, ncaVeh, stays, season, singles, plannedNights, fees, guests, marginB2C, marginB2B, kiliOn, kiliPrice, kiliClimbers, kiliRoute, zOn, zAdults, zChildren, zStoneNights, zStoneRate, zBeachNights, zBeachRate, zSingles, zSingleSupp, zFlightA, zFlightC, zOrigin, zTours]);
 
   /* handlers */
-  const togglePark = (id) => setParks((p) => ({ ...p, [id]: { on: !p[id]?.on, days: p[id]?.days ?? 2, feeA: p[id]?.feeA ?? PARKS.find((x) => x.id === id).feeA, feeC: p[id]?.feeC ?? PARKS.find((x) => x.id === id).feeC } }));
-  const addCustomPark = () => setCustomParks((c) => [...c, { id: "cp" + Date.now(), name: "", days: 2, feeA: 50, feeC: 15, perVeh: 0 }]);
+  const togglePark = (id) => setParks((p) => ({ ...p, [id]: { on: !p[id]?.on, days: p[id]?.days ?? 2, feeA: p[id]?.feeA ?? PARKS.find((x) => x.id === id).feeA, feeC: p[id]?.feeC ?? PARKS.find((x) => x.id === id).feeC, vehFee: p[id]?.vehFee ?? PARKS.find((x) => x.id === id).vehFee ?? 0 } }));
+  const addCustomPark = () => setCustomParks((c) => [...c, { id: "cp" + Date.now(), name: "", days: 2, feeA: 50, feeC: 15, vehFee: 0 }]);
   const setCustomPark = (id, k, v) => setCustomParks((c) => c.map((x) => (x.id === id ? { ...x, [k]: v } : x)));
   const delCustomPark = (id) => setCustomParks((c) => c.filter((x) => x.id !== id));
   const setPark = (id, k, v) => setParks((p) => ({ ...p, [id]: { ...p[id], on: true, [k]: v } }));
-  const addStay = () => setStays((s) => [...s, { id: "s" + Date.now(), loc: "karatu", tier: "m1", prop: "", nights: 1, inPark: false, board: "Half board", cA: 0, cC: 0, rate: repRate("m1", season) }]);
+  const ssDefault = (tier, sn) => Math.round(repRate(tier, sn) * 0.5);
+  const addStay = () => setStays((s) => [...s, { id: "s" + Date.now(), loc: "karatu", tier: "m1", prop: "", nights: 1, inPark: false, board: "Half board", cA: 0, cC: 0, rate: repRate("m1", season), singleSupp: ssDefault("m1", season) }]);
   const setStayV = (id, k, v) => setStays((s) => s.map((x) => (x.id === id ? { ...x, [k]: v } : x)));
   const setStayLoc = (id, locId) => {
-    if (locId === "__custom__") { setStays((s) => s.map((x) => x.id === id ? { ...x, loc: "__custom__", tier: x.tier || "m2", prop: "", customProp: "", customLoc: x.customLoc || "", inPark: false, board: x.board || "Full board", cA: 0, cC: 0, rate: repRate(x.tier || "m2", season) } : x)); return; }
-    const M = locMeta(locId); const tier = firstTier(locId);
-    setStays((s) => s.map((x) => x.id === id ? { ...x, loc: locId, tier, prop: "", customProp: "", inPark: M.inPark, board: M.board, cA: M.inPark ? 60 : 0, cC: M.inPark ? 18 : 0, rate: repRate(tier, season) } : x));
+    if (locId === "__custom__") { setStays((s) => s.map((x) => x.id === id ? { ...x, loc: "__custom__", tier: x.tier || "m2", prop: "", customProp: "", customLoc: x.customLoc || "", inPark: false, board: x.board || "Full board", cA: 0, cC: 0, rate: repRate(x.tier || "m2", season), singleSupp: ssDefault(x.tier || "m2", season) } : x)); return; }
+    const M = locMeta(locId); const tier = firstTier(locId); const cf = concFor(locId);
+    setStays((s) => s.map((x) => x.id === id ? { ...x, loc: locId, tier, prop: "", customProp: "", inPark: M.inPark, board: M.board, cA: M.inPark ? cf.a : 0, cC: M.inPark ? cf.c : 0, rate: repRate(tier, season), singleSupp: ssDefault(tier, season) } : x));
   };
-  const setStayTier = (id, tierId) => setStays((s) => s.map((x) => x.id === id ? { ...x, tier: tierId, prop: "", rate: repRate(tierId, season) } : x));
+  const setStayTier = (id, tierId) => setStays((s) => s.map((x) => x.id === id ? { ...x, tier: tierId, prop: "", rate: repRate(tierId, season), singleSupp: ssDefault(tierId, season) } : x));
   const onStoneTier = (tid) => { setZStoneTier(tid); setZStoneRate(repRate(tid, season)); setZStoneProp(""); };
   const onBeachLoc = (lid) => { const tier = firstTier(lid); setZBeachLoc(lid); setZBeachTier(tier); setZBeachProp(""); setZBeachRate(repRate(tier, season)); };
   const onBeachTier = (tid) => { setZBeachTier(tid); setZBeachRate(repRate(tid, season)); setZBeachProp(""); };
@@ -776,15 +801,20 @@ export default function App() {
   };
 
   /* planner */
+  const stayName = (s) => { const propName = (s.prop === "__custom__" ? (s.customProp || "") : s.prop) || ""; const locName = s.loc === "__custom__" ? (s.customLoc || "Custom location") : locMeta(s.loc).name; return propName || `${locName} (${tierMeta(s.tier).label})`; };
+  const stayOptions = () => { const o = stays.map(stayName); if (zOn) { if (zStoneProp || zStoneNights) o.push(zStoneProp || "Stone Town hotel"); if (zBeachProp || zBeachNights) o.push(zBeachProp || (locMeta(zBeachLoc).name.replace("Zanzibar — ", "") + " beach resort")); } return [...new Set(o.filter(Boolean))]; };
   const buildSkeleton = () => {
-    const out = [{ id: "d0", title: "Arrival in Tanzania", loc: "Arusha", act: "Arrival at Kilimanjaro International Airport, met by your driver-guide and transferred to your lodge. Trip briefing and time to relax." }];
-    selectedParks.forEach((p) => { for (let i = 0; i < p.days; i++) out.push({ id: "d" + p.id + i, title: p.name.replace(" (NCAA)", "") + (p.days > 1 ? ` — Day ${i + 1}` : ""), loc: p.name.split(" ")[0], act: p.acts.join(" ") }); });
-    if (kiliOn) { const r = KILI.find(k => k.id === kiliRoute); out.push({ id: "dk", title: `Kilimanjaro climb — ${r.name}`, loc: "Kilimanjaro", act: `${r.days}-day guided ascent via the ${r.name}. Full mountain crew, meals and accommodation included.` }); }
-    if (zOn) out.push({ id: "dz1", title: "Fly to Zanzibar", loc: "Zanzibar", act: `Scenic flight from ${zOrigin} to Zanzibar — ${zStoneNights} night${zStoneNights !== 1 ? "s" : ""} at ${zStoneProp || "a Stone Town hotel"} exploring the historic spice island, then ${zBeachNights} night${zBeachNights !== 1 ? "s" : ""} at ${zBeachProp || "a beach resort"} on ${locMeta(zBeachLoc).name.replace("Zanzibar — ", "")}.` });
-    out.push({ id: "dz", title: "Departure", loc: "Arusha", act: "Final morning at leisure before your airport transfer and onward flight." });
+    const nights = []; stays.forEach((s) => { const nm = stayName(s); for (let i = 0; i < (num(s.nights) || 0); i++) nights.push({ name: nm, board: s.board }); });
+    let ni = 0; const take = () => { const n = nights.length ? nights[Math.min(ni, nights.length - 1)] : null; ni++; return n; };
+    const av = take();
+    const out = [{ id: "d0", title: "Arrival in Tanzania", loc: "Arusha", act: "Arrival at Kilimanjaro International Airport, met by your driver-guide and transferred to your lodge. Trip briefing and time to relax.", stay: av ? av.name : "", board: av ? av.board : "Full board" }];
+    selectedParks.forEach((p) => { for (let i = 0; i < p.days; i++) { const n = take(); out.push({ id: "d" + p.id + i, title: p.name.replace(" (NCAA)", "") + (p.days > 1 ? ` — Day ${i + 1}` : ""), loc: p.name.split(" ")[0], act: p.acts.join(" "), stay: n ? n.name : "", board: n ? n.board : "Full board" }); } });
+    if (kiliOn) { const r = KILI.find(k => k.id === kiliRoute); out.push({ id: "dk", title: `Kilimanjaro climb — ${r.name}`, loc: "Kilimanjaro", act: `${r.days}-day guided ascent via the ${r.name}. Full mountain crew, meals and accommodation included.`, stay: "Mountain camp / mountain hut", board: "Full board" }); }
+    if (zOn) out.push({ id: "dz1", title: "Fly to Zanzibar", loc: "Zanzibar", act: `Scenic flight from ${zOrigin} to Zanzibar — ${zStoneNights} night${zStoneNights !== 1 ? "s" : ""} at ${zStoneProp || "a Stone Town hotel"} exploring the historic spice island, then ${zBeachNights} night${zBeachNights !== 1 ? "s" : ""} at ${zBeachProp || "a beach resort"} on ${locMeta(zBeachLoc).name.replace("Zanzibar — ", "")}.`, stay: zBeachProp || zStoneProp || "Zanzibar resort", board: zBeachBoard || "Half board" });
+    out.push({ id: "dz", title: "Departure", loc: "Arusha", act: "Final morning at leisure before your airport transfer and onward flight.", stay: "", board: "" });
     setDays(out); flash("Day skeleton built");
   };
-  const addDay = () => setDays((d) => [...d, { id: "d" + Date.now(), title: "New day", loc: "", act: "" }]);
+  const addDay = () => setDays((d) => [...d, { id: "d" + Date.now(), title: "New day", loc: "", act: "", stay: "", board: "Full board" }]);
   const setDay = (id, k, v) => setDays((d) => d.map((x) => (x.id === id ? { ...x, [k]: v } : x)));
   const delDay = (id) => setDays((d) => d.filter((x) => x.id !== id));
 
@@ -804,38 +834,128 @@ export default function App() {
       const data = await res.json();
       let txt = (data.content || []).map((c) => c.text || "").join("").trim().replace(/^```(json)?/i, "").replace(/```$/i, "").trim();
       const arr = JSON.parse(txt);
-      setDays(arr.map((it, i) => ({ id: "g" + i + Date.now(), title: (it.title || `Day ${i + 1}`).slice(0, 70), loc: it.location || "", act: it.activities || "" })));
+      const aiNights = []; stays.forEach((s) => { const nm = stayName(s); for (let i = 0; i < (num(s.nights) || 0); i++) aiNights.push({ name: nm, board: s.board }); });
+      setDays(arr.map((it, i) => { const isLast = i === arr.length - 1; const n = (!isLast && aiNights.length) ? aiNights[Math.min(i, aiNights.length - 1)] : null; return ({ id: "g" + i + Date.now(), title: (it.title || `Day ${i + 1}`).slice(0, 70), loc: it.location || "", act: it.activities || "", stay: n ? n.name : "", board: n ? n.board : (isLast ? "" : "Full board") }); }));
       flash("Itinerary drafted with AI — edit anything");
     } catch (e) { setAiErr("Couldn't reach the AI writer. Built a draft from your selections instead."); buildSkeleton(); }
     finally { setAiBusy(false); }
   };
 
-  /* save / load */
-  const snapshot = () => ({
-    id: savedId || uid(), operator, client, adults, children, childAge, guests, start, end, season, seasonOverride,
-    parks: selectedParks.map((p) => ({ id: p.id, name: p.name, days: p.days })),
-    stays: stays.map((s) => { const propName = (s.prop === "__custom__" ? (s.customProp || "") : s.prop) || ""; const locName = s.loc === "__custom__" ? (s.customLoc || "Custom location") : locMeta(s.loc).name; return { ...s, name: propName || (locName + " · " + tierMeta(s.tier).label), locName, board: s.board }; }),
-    nca: { on: ncaOn && serengetiSelected, days: ncaDays },
-    vehRate, vehicles, guideRate, serviceDays, singles, nights: plannedNights, fees,
-    marginB2C, marginB2B, days, b2b: calc.b2b,
-    inclItinerary, inclusions, exclusions,
-    kili: kiliOn ? { route: KILI.find((k) => k.id === kiliRoute)?.name, days: KILI.find((k) => k.id === kiliRoute)?.days, climbers: kiliClimbers } : null,
-    zanzibar: zOn ? { nights: zStoneNights + zBeachNights, stoneNights: zStoneNights, beachNights: zBeachNights, stoneName: zStoneProp || ("Stone Town · " + tierMeta(zStoneTier).label), beachName: zBeachProp || (locMeta(zBeachLoc).name + " · " + tierMeta(zBeachTier).label), beachLoc: locMeta(zBeachLoc).name, stoneBoard: zStoneBoard, beachBoard: zBeachBoard, origin: zOrigin, adults: zAdults, children: zChildren, tours: zTours.filter((t) => t.on && t.name.trim()).map((t) => t.name) } : null,
-    totals: calc, created: Date.now(),
-  });
-  const saveProposal = async () => {
-    const doc = snapshot();
-    try {
-      await window.storage.set("proposal:" + doc.id, JSON.stringify(doc), true);
-      const meta = { id: doc.id, client: client || "Untitled client", total: calc.total, guests, adults, children, created: doc.created, days: serviceDays, season, kili: !!doc.kili, zanzibar: !!doc.zanzibar };
-      const next = [meta, ...proposals.filter((p) => p.id !== doc.id)];
-      setProposals(next); await window.storage.set("idx", JSON.stringify(next)); setSavedId(doc.id);
-      flash("Proposal saved — code " + doc.id);
-    } catch (e) { setSavedId(doc.id); flash("Saved for this session"); }
+  /* save / load + versioning */
+  const draftRef = useRef(null);
+  // Sequential codes: DPS{YY}-1001, DPS{YY}-1002 … resetting to 1001 each calendar year.
+  const nextSeq = () => {
+    const pre = "DPS" + String(new Date().getFullYear()).slice(-2) + "-";
+    let max = 1000;
+    proposals.forEach((p) => { const c = String(p.base || p.id || ""); if (c.startsWith(pre)) { const n = parseInt(c.slice(pre.length), 10); if (!isNaN(n) && n > max) max = n; } });
+    return pre + (max + 1);
   };
+  const baseCode = () => editingBase || savedId || (draftRef.current || (draftRef.current = nextSeq()));
+  const codeFor = (base, ver) => (ver > 0 ? `${base}-v${ver}` : base);
+
+  const collectState = () => ({
+    operator, client, start, end, seasonOverride,
+    adults, children, childAge, childAccomPct, singles,
+    parks, customParks,
+    ncaOn, ncaDays, ncaA, ncaC, ncaVeh,
+    stays,
+    vehRate, vehAuto, vehCount, guideRate, safariDaysOv,
+    kiliOn, kiliRoute, kiliClimbers, kiliPrice,
+    zOn, zAdults, zChildren, zStoneNights, zStoneTier, zStoneBoard, zStoneProp, zStoneRate,
+    zBeachLoc, zBeachBoard, zBeachTier, zBeachProp, zBeachNights, zBeachRate,
+    zSingles, zSingleSupp, zOrigin, zFlightA, zFlightC, zTours,
+    fees, marginB2C, marginB2B, days, inclItinerary, inclusions, exclusions,
+  });
+
+  const applyState = (s) => {
+    if (!s) return;
+    const S = (setter, v, d) => setter(v !== undefined ? v : d);
+    S(setOperator, s.operator, "Dream Peak Safaris"); S(setClient, s.client, "");
+    S(setStart, s.start, ""); S(setEnd, s.end, ""); S(setSeasonOverride, s.seasonOverride, "auto");
+    S(setAdults, s.adults, 2); S(setChildren, s.children, 0); S(setChildAge, s.childAge, "2–11 yrs"); S(setChildAccomPct, s.childAccomPct, 50); S(setSingles, s.singles, 0);
+    S(setParks, s.parks, {}); S(setCustomParks, s.customParks, []);
+    S(setNcaOn, s.ncaOn, true); S(setNcaDays, s.ncaDays, 2); S(setNcaA, s.ncaA, 70.8); S(setNcaC, s.ncaC, 23.6); S(setNcaVeh, s.ncaVeh, 20);
+    if (s.stays) setStays(s.stays);
+    S(setVehRate, s.vehRate, 250); S(setVehAuto, s.vehAuto, true); S(setVehCount, s.vehCount, 1); S(setGuideRate, s.guideRate, 50); S(setSafariDaysOv, s.safariDaysOv, "");
+    S(setKiliOn, s.kiliOn, false); S(setKiliRoute, s.kiliRoute, "lemosho"); S(setKiliClimbers, s.kiliClimbers, 2); S(setKiliPrice, s.kiliPrice, 2750);
+    S(setZOn, s.zOn, false); S(setZAdults, s.zAdults, 2); S(setZChildren, s.zChildren, 0);
+    S(setZStoneNights, s.zStoneNights, 2); S(setZStoneTier, s.zStoneTier, "m1"); S(setZStoneBoard, s.zStoneBoard, "Bed & breakfast"); S(setZStoneProp, s.zStoneProp, ""); S(setZStoneRate, s.zStoneRate, 130);
+    S(setZBeachLoc, s.zBeachLoc, "znz_nungwi"); S(setZBeachBoard, s.zBeachBoard, "Half board"); S(setZBeachTier, s.zBeachTier, "m2"); S(setZBeachProp, s.zBeachProp, ""); S(setZBeachNights, s.zBeachNights, 3); S(setZBeachRate, s.zBeachRate, 180);
+    S(setZSingles, s.zSingles, 0); S(setZSingleSupp, s.zSingleSupp, 70); S(setZOrigin, s.zOrigin, "JRO"); S(setZFlightA, s.zFlightA, 250); S(setZFlightC, s.zFlightC, 200);
+    if (s.zTours) setZTours(s.zTours);
+    if (s.fees) setFees(s.fees);
+    S(setMarginB2C, s.marginB2C, 25); S(setMarginB2B, s.marginB2B, 18);
+    if (s.days) setDays(s.days);
+    S(setInclItinerary, s.inclItinerary, true);
+    if (s.inclusions) setInclusions(s.inclusions);
+    if (s.exclusions) setExclusions(s.exclusions);
+  };
+
+  const snapshot = (info) => {
+    const base = info?.base ?? baseCode();
+    const version = info?.version ?? editingVersion;
+    const code = codeFor(base, version);
+    return {
+      id: code, base, code, version, operator, client, adults, children, childAge, guests, start, end, season, seasonOverride,
+      parks: selectedParks.map((p) => ({ id: p.id, name: p.name, days: p.days })),
+      stays: stays.map((s) => { const propName = (s.prop === "__custom__" ? (s.customProp || "") : s.prop) || ""; const locName = s.loc === "__custom__" ? (s.customLoc || "Custom location") : locMeta(s.loc).name; return { ...s, name: propName || (locName + " · " + tierMeta(s.tier).label), locName, board: s.board }; }),
+      nca: { on: ncaOn && serengetiSelected, days: ncaDays },
+      vehRate, vehicles, guideRate, serviceDays, singles, nights: plannedNights, fees,
+      marginB2C, marginB2B, days, b2b: calc.b2b,
+      inclItinerary, inclusions, exclusions,
+      kili: kiliOn ? { route: KILI.find((k) => k.id === kiliRoute)?.name, days: KILI.find((k) => k.id === kiliRoute)?.days, climbers: kiliClimbers } : null,
+      zanzibar: zOn ? { nights: zStoneNights + zBeachNights, stoneNights: zStoneNights, beachNights: zBeachNights, stoneName: zStoneProp || ("Stone Town · " + tierMeta(zStoneTier).label), beachName: zBeachProp || (locMeta(zBeachLoc).name + " · " + tierMeta(zBeachTier).label), beachLoc: locMeta(zBeachLoc).name, stoneBoard: zStoneBoard, beachBoard: zBeachBoard, origin: zOrigin, adults: zAdults, children: zChildren, tours: zTours.filter((t) => t.on && t.name.trim()).map((t) => t.name) } : null,
+      totals: calc, created: info?.created ?? Date.now(), updated: Date.now(),
+      _state: collectState(),
+    };
+  };
+
+  const saveProposal = async () => {
+    const base = baseCode();
+    const isUpdate = editingBase != null;
+    const version = isUpdate ? editingVersion + 1 : 0;
+    const existing = proposals.find((p) => (p.base || p.id) === base);
+    const createdAt = existing?.created ?? Date.now();
+    const doc = snapshot({ base, version, created: createdAt });
+    const code = doc.code;
+    try {
+      await window.storage.set("proposal:" + base, JSON.stringify(doc), true);
+      const meta = { base, id: base, code, version, client: client || "Untitled client", total: calc.total, guests, adults, children, created: createdAt, updated: doc.updated, days: serviceDays, season, kili: !!doc.kili, zanzibar: !!doc.zanzibar };
+      const next = [meta, ...proposals.filter((p) => (p.base || p.id) !== base)];
+      setProposals(next); await window.storage.set("idx", JSON.stringify(next));
+      setSavedId(base); setEditingBase(base); setEditingVersion(version);
+      flash((isUpdate ? "Updated — code " : "Proposal saved — code ") + code);
+    } catch (e) { setSavedId(base); setEditingBase(base); setEditingVersion(version); flash("Saved for this session — code " + code); }
+  };
+
+  const editProposal = async (base) => {
+    try {
+      const r = await window.storage.get("proposal:" + base, true);
+      if (r) {
+        const d = JSON.parse(r.value);
+        // New proposals carry full _state; older ones are rebuilt best-effort from their stored fields.
+        const st = d._state || {
+          operator: d.operator, client: d.client, start: d.start, end: d.end, seasonOverride: d.seasonOverride,
+          adults: d.adults, children: d.children, childAge: d.childAge, singles: d.singles,
+          stays: d.stays, ncaOn: d.nca && d.nca.on, ncaDays: d.nca && d.nca.days,
+          vehRate: d.vehRate, guideRate: d.guideRate, safariDaysOv: d.serviceDays != null ? String(d.serviceDays) : "",
+          marginB2C: d.marginB2C, marginB2B: d.marginB2B,
+          days: d.days, inclItinerary: d.inclItinerary, inclusions: d.inclusions, exclusions: d.exclusions,
+        };
+        applyState(st);
+        setEditingBase(d.base || base); setEditingVersion(d.version || 0); setSavedId(d.base || base); setClientDoc(null); setTab("builder");
+        flash(d._state ? "Editing " + (d.code || base) + " — change anything, then Save update" : "Editing " + (d.code || base) + " — please re-check parks for this older proposal");
+        return;
+      }
+    } catch (e) {}
+    flash("Couldn't load that proposal to edit");
+  };
+
+  const newProposal = () => { draftRef.current = null; setEditingBase(null); setEditingVersion(0); setSavedId(null); flash("Started a new proposal — the next save gets a fresh code"); };
+
   const openClient = async (id) => { try { const r = await window.storage.get("proposal:" + id, true); if (r) { setClientDoc(JSON.parse(r.value)); setTab("client"); return; } } catch (e) {} if (id === (savedId || "")) { setClientDoc(snapshot()); setTab("client"); } else flash("Couldn't open that proposal"); };
   const previewCurrent = () => { setClientDoc(snapshot()); setTab("client"); };
-  const delProposal = async (id) => { try { await window.storage.delete("proposal:" + id, true); } catch (e) {} const next = proposals.filter((p) => p.id !== id); setProposals(next); try { await window.storage.set("idx", JSON.stringify(next)); } catch (e) {} flash("Removed"); };
+  const delProposal = async (id) => { try { await window.storage.delete("proposal:" + id, true); } catch (e) {} const next = proposals.filter((p) => (p.base || p.id) !== id); setProposals(next); try { await window.storage.set("idx", JSON.stringify(next)); } catch (e) {} if ((editingBase || savedId) === id) newProposal(); flash("Removed"); };
   const copy = async (t) => { try { await navigator.clipboard.writeText(t); } catch (e) { const ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (_) {} ta.remove(); } flash("Copied: " + t); };
 
   /* ============================ render ============================ */
@@ -908,13 +1028,14 @@ export default function App() {
                           <div className="parkrow-cfg">
                             <span className="cfg-item"><Stepper sm value={parks[p.id]?.days ?? 2} set={(v) => setPark(p.id, "days", Math.max(1, v))} min={1} label={p.name + " days"} /> days</span>
                             <span className="cfg-item"><span style={{ fontSize: 10, fontWeight: 700, color: "var(--muted2)" }}>FEE / DAY</span><AC a={parks[p.id]?.feeA ?? p.feeA} c={parks[p.id]?.feeC ?? p.feeC} setA={(v) => setPark(p.id, "feeA", v)} setC={(v) => setPark(p.id, "feeC", v)} /></span>
+                            <span className="cfg-item"><span style={{ fontSize: 10, fontWeight: 700, color: "var(--muted2)" }}>VEHICLE / DAY</span><span className="acfee"><span className="box"><span>$</span><input value={parks[p.id]?.vehFee ?? p.vehFee ?? 0} onChange={(e) => setPark(p.id, "vehFee", num(e.target.value))} aria-label={p.name + " vehicle entry fee"} /></span></span></span>
                             {p.perVeh > 0 && <span className="cfg-item" style={{ fontSize: 11 }}>+ {usd(p.perVeh)}/vehicle crater fee</span>}
                           </div>
                         )}
                       </div>
                     );
                   })}
-                  <div className="note">Crater service fee applies per vehicle for the Ngorongoro crater floor. Concession &amp; camping fees are set per lodge below (only when you sleep inside a park).</div>
+                  <div className="note">Vehicle entry fee is charged per safari vehicle per day; the Ngorongoro crater service fee is per vehicle. Concession &amp; camping fees are set per lodge below (only when you sleep inside a park).</div>
                   {customParks.map((c) => (
                     <div key={c.id} className="parkrow on" style={{ marginTop: 10 }}>
                       <div className="parkrow-top" style={{ cursor: "default" }}>
@@ -925,7 +1046,7 @@ export default function App() {
                       <div className="parkrow-cfg">
                         <span className="cfg-item"><Stepper sm value={num(c.days, 1)} set={(v) => setCustomPark(c.id, "days", Math.max(1, v))} min={1} label="custom park days" /> days</span>
                         <span className="cfg-item"><span style={{ fontSize: 10, fontWeight: 700, color: "var(--muted2)" }}>FEE / DAY</span><AC a={c.feeA} c={c.feeC} setA={(v) => setCustomPark(c.id, "feeA", v)} setC={(v) => setCustomPark(c.id, "feeC", v)} /></span>
-                        <span className="cfg-item"><span style={{ fontSize: 10, fontWeight: 700, color: "var(--muted2)" }}>/VEHICLE</span><span className="acfee"><span className="box"><span>$</span><input value={c.perVeh} onChange={(e) => setCustomPark(c.id, "perVeh", num(e.target.value))} aria-label="custom per-vehicle fee" /></span></span></span>
+                        <span className="cfg-item"><span style={{ fontSize: 10, fontWeight: 700, color: "var(--muted2)" }}>VEHICLE / DAY</span><span className="acfee"><span className="box"><span>$</span><input value={c.vehFee} onChange={(e) => setCustomPark(c.id, "vehFee", num(e.target.value))} aria-label="custom vehicle entry fee" /></span></span></span>
                       </div>
                     </div>
                   ))}
@@ -991,18 +1112,21 @@ export default function App() {
                         <div className="stay-cfg">
                           <span className="cfg-item"><span style={{ fontSize: 10, fontWeight: 700, color: "var(--muted2)" }}>RATE /PP/NIGHT</span><span className="acfee"><span className="box"><span>$</span><input value={s.rate} onChange={(e) => setStayV(s.id, "rate", num(e.target.value))} aria-label="rate per person per night" /></span></span></span>
                           <span className="cfg-item"><span style={{ fontSize: 10, fontWeight: 700, color: "var(--muted2)" }}>MEAL PLAN</span><select className="inp mini" style={{ height: 34, padding: "5px 8px" }} value={s.board} onChange={(e) => setStayV(s.id, "board", e.target.value)} aria-label="meal plan">{MEALS.map((mp) => <option key={mp} value={mp}>{mp}</option>)}</select></span>
+                          <span className="cfg-item"><span style={{ fontSize: 10, fontWeight: 700, color: "var(--muted2)" }}>SINGLE SUPP /NIGHT</span><span className="acfee"><span className="box"><span>$</span><input value={s.singleSupp ?? 0} onChange={(e) => setStayV(s.id, "singleSupp", num(e.target.value))} aria-label="single supplement per night" /></span></span></span>
                           <span className="tcheck" onClick={() => setStayV(s.id, "inPark", !s.inPark)}><span className={`cbx sm ${s.inPark ? "on" : ""}`}>{s.inPark && <Check size={12} strokeWidth={3} />}</span>In-park concession</span>
                           {s.inPark && <span className="cfg-item"><span style={{ fontSize: 10, fontWeight: 700, color: "var(--muted2)" }}>CONC / NIGHT</span><AC a={s.cA} c={s.cC} setA={(v) => setStayV(s.id, "cA", v)} setC={(v) => setStayV(s.id, "cC", v)} /></span>}
                         </div>
                       </div>
                     );
                   })}
-                  <button className="linkbtn" onClick={addStay}><Plus size={15} />Add a lodge stay</button>
+                  <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                    <button className="linkbtn" onClick={addStay}><Plus size={15} />Add a lodge stay</button>
+                    <button className="linkbtn" onClick={refreshRatesToSeason} title="Reset every lodge rate and single supplement to the current season's band">↻ Refresh rates to {SEASONS[season].label.toLowerCase()}</button>
+                  </div>
 
                   <div className="occ">
                     <div className="blk"><label className="fl"><BedSingle size={12} style={{ verticalAlign: "-2px", marginRight: 4 }} />Single rooms</label><Stepper sm value={singles} set={setSingles} min={0} label="single rooms" /></div>
-                    <div className="blk"><label className="fl">Single supplement / night</label><span className="acfee"><span className="box"><span>$</span><input value={singleSupp} onChange={(e) => setSingleSupp(num(e.target.value))} aria-label="single supplement" /></span></span></div>
-                    <span className="hint" style={{ margin: 0 }}>Charged per single-occupancy room across {plannedNights} night{plannedNights !== 1 ? "s" : ""}.</span>
+                    <span className="hint" style={{ margin: 0 }}>Each single room pays its own lodge&apos;s single supplement (set per property above) for the nights spent there.</span>
                   </div>
                   <div className={`hint ${tripNights != null && start && end && plannedNights !== tripNights ? "warn" : ""}`}>{plannedNights} night{plannedNights !== 1 ? "s" : ""} of accommodation{tripNights != null && start && end ? ` · trip is ${tripNights} night${tripNights !== 1 ? "s" : ""}` : ""}{tripNights != null && start && end && plannedNights !== tripNights ? " — these don't match yet." : ""}. Rates are per-person planning guides — verify the live contracted rate &amp; meal basis before quoting.</div>
                 </div>
@@ -1118,11 +1242,13 @@ export default function App() {
                     <div key={f.id} className={`feeline ${f.on ? "" : "off"}`}>
                       <span className={`cbx ${f.on ? "on" : ""}`} onClick={() => setFee(f.id, "on", !f.on)} role="checkbox" aria-checked={f.on}>{f.on && <Check size={13} strokeWidth={3} />}</span>
                       <input className="inp mini" value={f.label} onChange={(e) => setFee(f.id, "label", e.target.value)} aria-label="Fee label" />
-                      <input className="inp mini mono" value={f.amount} onChange={(e) => setFee(f.id, "amount", num(e.target.value))} aria-label="Fee amount" />
+                      <input className="inp mini mono" value={f.amount} placeholder="adult" onChange={(e) => setFee(f.id, "amount", num(e.target.value))} aria-label="Adult amount" title="Adult / standard rate" />
+                      {(f.basis === "pp" || f.basis === "pp_day") ? <input className="inp mini mono" value={f.aC != null ? f.aC : ""} placeholder="child" onChange={(e) => setFee(f.id, "aC", e.target.value === "" ? undefined : num(e.target.value))} aria-label="Child amount" title="Child rate (optional — leave blank to match adult)" /> : <span style={{ textAlign: "center", color: "var(--muted2)", fontSize: 12 }}>—</span>}
                       <select className="inp mini" value={f.basis} onChange={(e) => setFee(f.id, "basis", e.target.value)} aria-label="Fee basis">{BASIS.map((b) => <option key={b.v} value={b.v}>{b.label}</option>)}</select>
                     </div>
                   ))}
                   <button className="linkbtn" onClick={addFee}><Plus size={15} />Add another fee</button>
+                  <div className="note" style={{ marginTop: 8 }}>For per-guest fees the two amounts are the <b>adult</b> and optional <b>child</b> rate (leave child blank to charge the adult rate). Tick an item to include it in the quote.</div>
                 </div>
               </section>
 
@@ -1187,9 +1313,9 @@ export default function App() {
                   <div className="pg"><span>Trade rate · per person (2 pax)</span><b style={{ color: "var(--khaki)" }}>{usd(calc.b2b.sharingSell[1])}</b></div>
                 </div>
 
-                <div className="led-actions"><button className="btn btn-gold" onClick={saveProposal}><Save size={16} />Save proposal</button><button className="btn btn-ghost" onClick={previewCurrent}><Eye size={16} />Client view</button></div>
+                <div className="led-actions"><button className="btn btn-gold" onClick={saveProposal}><Save size={16} />{editingBase ? `Save update (v${editingVersion + 1})` : "Save proposal"}</button><button className="btn btn-ghost" onClick={previewCurrent}><Eye size={16} />Client view</button></div>
               </div>
-              {savedId && <div className="hint" style={{ textAlign: "center", marginTop: 12 }}>Saved as <b className="mono" style={{ color: "var(--gold2)" }}>{savedId}</b> · <button className="linkbtn" style={{ padding: "4px 10px" }} onClick={() => copy(savedId)}><Copy size={13} />Copy code</button></div>}
+              {editingBase && <div className="hint" style={{ textAlign: "center", marginTop: 12 }}>Current code <b className="mono" style={{ color: "var(--gold2)" }}>{codeFor(editingBase, editingVersion)}</b> · next save → <b className="mono" style={{ color: "var(--gold2)" }}>{codeFor(editingBase, editingVersion + 1)}</b> · <button className="linkbtn" style={{ padding: "4px 10px" }} onClick={() => copy(codeFor(editingBase, editingVersion))}><Copy size={13} />Copy</button> · <button className="linkbtn" style={{ padding: "4px 10px" }} onClick={newProposal}>New proposal</button></div>}
             </div>
           </div>
         )}
@@ -1198,18 +1324,25 @@ export default function App() {
         {tab === "planner" && (
           <div className="planner">
             <div className="ai-banner"><Sparkles size={18} className="ic" /><div>Write each day yourself, or let Claude draft a polished day-by-day plan from your parks, climb and beach extension — then refine it line by line.</div></div>
-            <div className="plan-bar"><h2 style={{ fontSize: 20 }}>Day-by-day planner</h2><span className="tag">{days.length} day{days.length !== 1 ? "s" : ""}</span><label className="tcheck no-print" style={{ fontSize: 13 }} onClick={() => setInclItinerary((v) => !v)}><span className={`cbx sm ${inclItinerary ? "on" : ""}`}>{inclItinerary && <Check size={12} strokeWidth={3} />}</span>Include in proposal</label><div className="spacer" /><button className="btn btn-dark no-print" onClick={buildSkeleton}><FileText size={15} />Build from plan</button><button className="btn btn-sage no-print" onClick={generateAI} disabled={aiBusy}>{aiBusy ? <Loader2 size={15} className="spin" /> : <Sparkles size={15} />}{aiBusy ? "Drafting…" : "Generate with AI"}</button></div>
+            <div className="plan-bar"><h2 style={{ fontSize: 20 }}>Day-by-day planner</h2><span className="tag">{days.length} day{days.length !== 1 ? "s" : ""}</span><label className="tcheck no-print" style={{ fontSize: 13 }} onClick={() => setInclItinerary((v) => !v)}><span className={`cbx sm ${inclItinerary ? "on" : ""}`}>{inclItinerary && <Check size={12} strokeWidth={3} />}</span>Include in proposal</label><div className="spacer" /><button className="btn btn-dark no-print" onClick={buildSkeleton}><FileText size={15} />Build from plan</button><button className="btn btn-sage no-print" onClick={generateAI} disabled={aiBusy}>{aiBusy ? <Loader2 size={15} className="spin" /> : <Sparkles size={15} />}{aiBusy ? "Drafting…" : "Generate with AI"}</button><button className="btn btn-ghost no-print" onClick={previewCurrent}><Eye size={15} />Client view</button></div>
             {aiErr && <div className="hint warn" style={{ marginBottom: 14 }}>{aiErr}</div>}
             {days.length === 0 ? (
               <div className="empty"><h3>No days yet</h3><p>Add days manually, build a skeleton from your plan, or generate a full draft with AI.</p><div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 16, flexWrap: "wrap" }}><button className="btn btn-dark" onClick={addDay}><Plus size={15} />Add a day</button><button className="btn btn-sage" onClick={buildSkeleton}><FileText size={15} />Build from plan</button></div></div>
             ) : (
               <>
+                <datalist id="stay-options">{stayOptions().map((nm) => <option key={nm} value={nm} />)}</datalist>
                 {days.map((d, i) => (
                   <div className="day" key={d.id}>
                     <div className="day-rail"><div className="day-num"><small>DAY</small>{i + 1}</div>{i < days.length - 1 && <div className="day-line" />}</div>
                     <div className="day-card">
                       <div className="day-top"><input className="day-title" value={d.title} placeholder="Day title" onChange={(e) => setDay(d.id, "title", e.target.value)} /><span className="day-loc"><MapPin size={13} /><input value={d.loc} placeholder="Location" onChange={(e) => setDay(d.id, "loc", e.target.value)} /></span><span className="day-actions no-print"><button className="iconbtn" onClick={() => moveDay(i, -1)} disabled={i === 0} aria-label="Move day up"><ChevronUp size={15} /></button><button className="iconbtn" onClick={() => moveDay(i, 1)} disabled={i === days.length - 1} aria-label="Move day down"><ChevronDown size={15} /></button><button className="iconbtn" onClick={() => delDay(d.id)} aria-label="Delete day"><Trash2 size={15} /></button></span></div>
-                      <textarea className="day-act" value={d.act} placeholder="Describe the day's activities, game drives, meals and overnight…" onChange={(e) => setDay(d.id, "act", e.target.value)} />
+                      <textarea className="day-act" value={d.act} placeholder="Describe the day's activities, game drives and meals…" onChange={(e) => setDay(d.id, "act", e.target.value)} />
+                      <div className="no-print" style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap", alignItems: "center" }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "var(--muted2)", letterSpacing: ".04em" }}><BedSingle size={12} style={{ verticalAlign: "-2px", marginRight: 4 }} />OVERNIGHT</span>
+                        <input className="inp mini" list="stay-options" value={d.stay || ""} placeholder="Accommodation for the night" onChange={(e) => setDay(d.id, "stay", e.target.value)} style={{ flex: "1 1 200px", minWidth: 160 }} aria-label="Overnight accommodation" />
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "var(--muted2)", letterSpacing: ".04em" }}>MEALS</span>
+                        <select className="inp mini" value={d.board || ""} onChange={(e) => setDay(d.id, "board", e.target.value)} aria-label="Meals included" style={{ width: 150 }}>{MEALS.map((mp) => <option key={mp} value={mp}>{mp}</option>)}<option value="">No meals</option></select>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -1227,24 +1360,24 @@ export default function App() {
               <div className="empty" style={{ maxWidth: 560, margin: "0 auto" }}><h3>No proposals saved yet</h3><p>Build a trip and choose “Save proposal”. Each gets a shareable code and a polished client view.</p><button className="btn btn-dark" style={{ marginTop: 14 }} onClick={() => setTab("builder")}><Sliders size={15} />Go to builder</button></div>
             ) : (
               <div className="prop-list" style={{ maxWidth: 1100, margin: "0 auto" }}>
-                {proposals.map((p) => (
-                  <div className="prop" key={p.id}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><span className="code">{p.id}</span><span className={`season ${p.season || "shoulder"}`} style={{ padding: "3px 9px", fontSize: 10.5 }}><span className="season-dot" />{p.season || "shoulder"}</span></div>
+                {proposals.map((p) => { const base = p.base || p.id; const code = p.code || p.id; return (
+                  <div className="prop" key={base}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><span className="code">{code}</span><span className={`season ${p.season || "shoulder"}`} style={{ padding: "3px 9px", fontSize: 10.5 }}><span className="season-dot" />{p.season || "shoulder"}</span></div>
                     <h4>{p.client}</h4>
-                    <div className="meta"><span>{p.adults || p.guests}A{p.children ? " " + p.children + "C" : ""}</span><span>{p.days} days</span>{p.kili && <span className="tag" style={{ background: "rgba(154,140,90,.18)", color: "#6c6232" }}>Kili</span>}{p.zanzibar && <span className="tag" style={{ background: "rgba(62,124,140,.16)", color: "#2c6273" }}>Zanzibar</span>}</div>
+                    <div className="meta"><span>{p.adults || p.guests}A{p.children ? " " + p.children + "C" : ""}</span><span>{p.days} days</span>{p.version > 0 && <span className="tag" style={{ background: "rgba(192,83,31,.14)", color: "#a8461d" }}>v{p.version}</span>}{p.kili && <span className="tag" style={{ background: "rgba(154,140,90,.18)", color: "#6c6232" }}>Kili</span>}{p.zanzibar && <span className="tag" style={{ background: "rgba(62,124,140,.16)", color: "#2c6273" }}>Zanzibar</span>}</div>
                     <div className="pr">{usd(p.total)}</div>
-                    <div className="acts"><button className="btn btn-dark" onClick={() => openClient(p.id)}><ExternalLink size={14} />Open</button><button className="btn btn-ghost" style={{ color: "var(--tx)", border: "1px solid var(--line2)", background: "#fff" }} onClick={() => copy(p.id)}><Copy size={14} />Code</button><button className="iconbtn" onClick={() => delProposal(p.id)} aria-label="Delete"><Trash2 size={15} /></button></div>
+                    <div className="acts"><button className="btn btn-dark" onClick={() => openClient(base)}><Eye size={14} />Client view</button><button className="btn btn-ghost" style={{ color: "var(--tx)", border: "1px solid var(--line2)", background: "#fff" }} onClick={() => editProposal(base)}><Sliders size={14} />Edit</button><button className="btn btn-ghost" style={{ color: "var(--tx)", border: "1px solid var(--line2)", background: "#fff" }} onClick={() => copy(code)}><Copy size={14} />Code</button><button className="iconbtn" onClick={() => delProposal(base)} aria-label="Delete"><Trash2 size={15} /></button></div>
                   </div>
-                ))}
+                ); })}
               </div>
             )}
           </div>
         )}
 
-        {tab === "client" && clientDoc && <ClientView doc={clientDoc} back={() => setTab(savedId ? "builder" : "proposals")} copy={copy} />}
+        {tab === "client" && clientDoc && <ClientView doc={clientDoc} back={() => setTab(savedId ? "builder" : "proposals")} copy={copy} onEdit={clientDoc._state ? () => { applyState(clientDoc._state); setEditingBase(clientDoc.base || null); setEditingVersion(clientDoc.version || 0); setSavedId(clientDoc.base || null); setClientDoc(null); setTab("builder"); flash("Editing " + (clientDoc.code || clientDoc.id || "") + " — make changes, then Save update"); } : undefined} />}
       </main>
 
-      {tab === "builder" && <div className="mbar"><div><div className="l">Total · {usd(calc.perGuest)} pp avg</div><div className="v">{usd(calc.total)}</div></div><button className="btn btn-gold" onClick={saveProposal}><Save size={15} />Save</button></div>}
+      {tab === "builder" && <div className="mbar"><div><div className="l">Total · {usd(calc.perGuest)} pp avg</div><div className="v">{usd(calc.total)}</div></div><button className="btn btn-gold" onClick={saveProposal}><Save size={15} />{editingBase ? `Save v${editingVersion + 1}` : "Save"}</button></div>}
       {toast && <div className="toast"><Check size={16} className="ic" />{toast}</div>}
     </div>
   );
@@ -1284,7 +1417,7 @@ function ListEditor({ items, setItems, placeholder, accent, empty }) {
 }
 
 /* client-facing proposal + agent rate sheet + invoice */
-function ClientView({ doc, back, copy }) {
+function ClientView({ doc, back, copy, onEdit }) {
   const [mode, setMode] = useState("b2c");
   const [invNo, setInvNo] = useState(doc.id || "DPS-0001");
   const [invDate, setInvDate] = useState(new Date().toISOString().slice(0, 10));
@@ -1321,7 +1454,7 @@ function ClientView({ doc, back, copy }) {
   const invTotal = lines.reduce((s, l) => s + l.a, 0) || t.total || 0;
   const deposit = invTotal * depositPct / 100;
   const balance = invTotal - deposit;
-  const dueDate = doc.start ? new Date(new Date(doc.start + "T00:00:00").getTime() - 45 * 86400000).toISOString().slice(0, 10) : null;
+  const dueDate = doc.start ? addDaysYMD(doc.start, -45) : null;
 
   const btnGhost = { color: "var(--tx)", border: "1px solid var(--line2)", background: "#fff" };
 
@@ -1335,6 +1468,7 @@ function ClientView({ doc, back, copy }) {
           <button aria-pressed={mode === "invoice"} onClick={() => setMode("invoice")}>Invoice</button>
         </div>
         <div className="spacer" />
+        {onEdit && <button className="btn btn-ghost" style={btnGhost} onClick={onEdit}><Sliders size={15} />Edit</button>}
         <button className="btn btn-ghost" style={btnGhost} onClick={() => copy(doc.id)}><Copy size={15} />Copy code {doc.id}</button>
         <button className="btn btn-dark" onClick={() => window.print()}><Printer size={15} />Print / PDF</button>
       </div>
@@ -1421,12 +1555,12 @@ function ClientView({ doc, back, copy }) {
                   <h2><BadgeDollarSign size={18} className="ic" />Per-person rates by group size</h2>
                   {b ? <B2BTable b={b} doc={doc} /> : <p style={{ color: "var(--muted)" }}>Re-save this proposal in the builder to generate the group-size rate table.</p>}
                   <div className="b2b-legend">
-                    <b>How to read this table.</b> Find your group size in the column and read down. <b>Price per person (sharing)</b> is the headline figure and assumes two guests sharing a twin/double room. For an odd traveller in their own room, quote the <b>price per person (single room)</b> figure for that person. Vehicle, guiding and per-vehicle fees are shared across the group, so the per-person price falls as the group grows (shown for 1–6 guests on one vehicle). Rates are per person in USD; child and larger-group rates are quoted on request.
+                    <b>How to read this table.</b> Find your group size in the column and read down. <b>Price per person (sharing)</b> is the headline figure and assumes two guests sharing a twin/double room. For an odd traveller in their own room, quote the <b>price per person (single room)</b> figure for that person. Vehicle, guiding and per-vehicle fees are shared across the group, so the per-person price falls as the group grows (shown for 2–6 guests on one vehicle). Rates are per person in USD; solo-traveller (1 pax), child and larger-group rates are quoted on request.
                   </div>
                 </div>
                 {showItin && (
                   <div className="client-sec"><h2><Compass size={18} className="ic" />Itinerary outline</h2>
-                    {doc.days.map((d, i) => (<div className="cday" key={d.id || i}><div className="n">DAY {i + 1}{d.loc && <small>{d.loc}</small>}</div><div><h4>{d.title}</h4><p>{d.act}</p></div></div>))}
+                    {doc.days.map((d, i) => (<div className="cday" key={d.id || i}><div className="n">DAY {i + 1}{d.loc && <small>{d.loc}</small>}</div><div><h4>{d.title}</h4><p>{d.act}</p>{d.stay && <p className="overnight"><b>Overnight at {d.stay}.</b>{mealsLabel(d.board) ? ` Included meals: ${mealsLabel(d.board)}.` : ""}</p>}</div></div>))}
                   </div>
                 )}
                 <div className="client-sec"><h2><Check size={18} className="ic" />Package inclusions</h2><ul className="inc">{inc.map((x, i) => <li key={i}><Check size={15} className="ic" strokeWidth={3} /><span>{x}</span></li>)}</ul></div>
@@ -1442,7 +1576,7 @@ function ClientView({ doc, back, copy }) {
                 </div>
                 {showItin && (
                   <div className="client-sec"><h2><Compass size={18} className="ic" />Your journey, day by day</h2>
-                    {doc.days.map((d, i) => (<div className="cday" key={d.id || i}><div className="n">DAY {i + 1}{d.loc && <small>{d.loc}</small>}</div><div><h4>{d.title}</h4>{d.loc && <div className="loc"><MapPin size={11} style={{ verticalAlign: "-1px", marginRight: 3 }} />{d.loc}</div>}<p>{d.act}</p></div></div>))}
+                    {doc.days.map((d, i) => (<div className="cday" key={d.id || i}><div className="n">DAY {i + 1}{d.loc && <small>{d.loc}</small>}</div><div><h4>{d.title}</h4>{d.loc && <div className="loc"><MapPin size={11} style={{ verticalAlign: "-1px", marginRight: 3 }} />{d.loc}</div>}<p>{d.act}</p>{d.stay && <p className="overnight"><b>Overnight at {d.stay}.</b>{mealsLabel(d.board) ? ` Included meals: ${mealsLabel(d.board)}.` : ""}</p>}</div></div>))}
                   </div>
                 )}
                 <div className="client-sec"><h2><Check size={18} className="ic" />What's included</h2><ul className="inc">{inc.map((x, i) => <li key={i}><Check size={15} className="ic" strokeWidth={3} /><span>{x}</span></li>)}</ul></div>
@@ -1458,19 +1592,23 @@ function ClientView({ doc, back, copy }) {
 }
 
 function B2BTable({ b, doc }) {
-  const cols = b.sizes;
+  // Hide the solo-traveller (1 pax) column in the client-facing table — quoted on request.
+  const keep = b.sizes.map((n, i) => i).filter((i) => b.sizes[i] !== 1);
+  const cols = keep.map((i) => b.sizes[i]);
+  const pick = (arr) => keep.map((i) => arr[i]);
   return (
     <div className="b2b-wrap">
       <table className="b2b">
         <thead><tr><th className="rowlab">GROUP SIZE →</th>{cols.map((n) => <th key={n}>{n} pax</th>)}</tr></thead>
         <tbody>
-          <tr className="headline"><td className="rowlab">PRICE PER PERSON (sharing)</td>{b.sharingSell.map((v, i) => <td key={i}>{usd(v)}</td>)}</tr>
+          <tr className="headline"><td className="rowlab">PRICE PER PERSON (sharing)</td>{pick(b.sharingSell).map((v, i) => <td key={i}>{usd(v)}</td>)}</tr>
           <tr className="supp"><td className="rowlab">Single supplement (if alone)</td>{cols.map((n, i) => <td key={i}>{usd(b.singleSuppSell)}</td>)}</tr>
-          <tr className="single"><td className="rowlab">PRICE PER PERSON (single room)</td>{b.singleRoomSell.map((v, i) => <td key={i}>{usd(v)}</td>)}</tr>
+          <tr className="single"><td className="rowlab">PRICE PER PERSON (single room)</td>{pick(b.singleRoomSell).map((v, i) => <td key={i}>{usd(v)}</td>)}</tr>
           {b.kiliPP > 0 && <tr className="ext"><td className="rowlab">+ Kilimanjaro climb{doc.kili ? ` — ${doc.kili.route}` : ""} (per climber)</td>{cols.map((n, i) => <td key={i}>{usd(b.kiliPP)}</td>)}</tr>}
           {b.zPP > 0 && <tr className="ext"><td className="rowlab">+ Zanzibar extension{doc.zanzibar ? ` — ${doc.zanzibar.nights} nights` : ""} (per person)</td>{cols.map((n, i) => <td key={i}>{usd(b.zPP)}</td>)}</tr>}
         </tbody>
       </table>
+      <p style={{ fontSize: 11.5, color: "var(--muted)", margin: "8px 2px 0" }}>Solo-traveller (1&nbsp;pax) rates are available on request.</p>
     </div>
   );
 }
